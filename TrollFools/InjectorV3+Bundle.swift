@@ -158,6 +158,7 @@ extension InjectorV3 {
     }
 
     func markBundlesAsInjected(_ bundleURLs: [URL], privileged: Bool) throws {
+        return
         let filteredURLs = bundleURLs.filter { checkIsBundle($0) }
         precondition(filteredURLs.count == bundleURLs.count, "Not all urls are bundles")
 

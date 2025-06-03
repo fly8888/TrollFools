@@ -65,7 +65,7 @@ extension InjectorV3 {
             try applyCoreTrustBypass($0)
         }
 
-        let substrateFwkURL = try prepareSubstrate()
+//        let substrateFwkURL = try prepareSubstrate()
         guard let targetMachO = try locateAvailableMachO() else {
             DDLogError("All Mach-Os are protected", ddlog: logger)
 
@@ -74,7 +74,8 @@ extension InjectorV3 {
 
         DDLogInfo("Best matched Mach-O is \(targetMachO.path)", ddlog: logger)
 
-        let resourceURLs: [URL] = [substrateFwkURL] + assetURLs
+//        let resourceURLs: [URL] = [substrateFwkURL] + assetURLs
+        let resourceURLs: [URL] =  assetURLs
         try makeAlternate(targetMachO)
         do {
             try copyfiles(resourceURLs)
@@ -82,6 +83,10 @@ extension InjectorV3 {
                 try insertLoadCommandOfAsset(assetURL, to: targetMachO)
             }
             try applyCoreTrustBypass(targetMachO)
+            
+            //删除标记
+            try deleteSubstrate()
+            
         } catch {
             try? restoreAlternate(targetMachO)
             try? batchRemove(resourceURLs)
@@ -121,6 +126,14 @@ extension InjectorV3 {
         try cmdChangeOwnerToInstalld(fwkURL, recursively: true)
 
         return fwkURL
+    }
+    
+    fileprivate func deleteSubstrate() throws {
+        let fwkURL = frameworksDirectoryURL.appendingPathComponent(Self.substrateFwkName)
+        if(FileManager.default.fileExists(atPath: fwkURL.path))
+        {
+            try FileManager.default.removeItem(at: fwkURL)
+        }
     }
 
     fileprivate func standardizeLoadCommandDylibToSubstrate(_ assetURL: URL) throws {
